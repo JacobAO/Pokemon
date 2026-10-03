@@ -1,9 +1,10 @@
-package com.jacobao.pokemon.data.paging
+package com.jacobao.pokemon.ui.list
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.jacobao.pokemon.data.model.PokemonSummary
-import com.jacobao.pokemon.data.repository.PokeRepo
+import com.jacobao.pokemon.data.PokeRepo
+import com.jacobao.pokemon.ui.model.PokemonSummary
+import com.jacobao.pokemon.ui.model.toModel
 import timber.log.Timber
 
 /**
@@ -17,7 +18,7 @@ import timber.log.Timber
 class PokemonPagingSource(
   private val pokeRepo: PokeRepo,
 ) : PagingSource<Int, PokemonSummary>() {
-
+  
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PokemonSummary> {
     val offset = params.key ?: 0
     return try {
@@ -33,7 +34,7 @@ class PokemonPagingSource(
       }
       
       LoadResult.Page(
-        data = response.results,
+        data = response.results.map { it.toModel() },
         prevKey = null,
         nextKey = nextKey,
       )
@@ -42,7 +43,7 @@ class PokemonPagingSource(
       LoadResult.Error(e)
     }
   }
-
+  
   // Refreshes restart from the beginning of the list.
   override fun getRefreshKey(state: PagingState<Int, PokemonSummary>): Int? = null
 }

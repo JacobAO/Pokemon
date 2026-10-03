@@ -15,11 +15,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -31,11 +35,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import coil3.compose.AsyncImage
 import com.jacobao.pokemon.R
-import com.jacobao.pokemon.data.model.PokemonDetail
-import com.jacobao.pokemon.data.model.PokemonSprites
+import com.jacobao.pokemon.ui.model.PokemonDetail
 import com.jacobao.pokemon.navigation.LocalBackButtonVisibility
 import com.jacobao.pokemon.ui.common.LoadErrorMessage
 import com.jacobao.pokemon.ui.theme.PokemonTheme
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -48,10 +52,22 @@ fun PokemonDetailScreenWrapper(
   modifier: Modifier = Modifier,
 ) {
   val state by viewModel.state.collectAsStateWithLifecycle()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val refreshFailedMessage = stringResource(R.string.couldnt_refresh_pokemon_details)
+
+  LaunchedEffect(viewModel, snackbarHostState) {
+    viewModel.refreshFailed.collect {
+      // Replace any visible snackbar rather than queueing repeated failures.
+      snackbarHostState.currentSnackbarData?.dismiss()
+      launch { snackbarHostState.showSnackbar(refreshFailedMessage) }
+    }
+  }
+
   PokemonDetailScreen(
     state = state,
     onBack = onBack,
     onRefresh = viewModel::load,
+    snackbarHostState = snackbarHostState,
     modifier = modifier,
   )
 }
@@ -63,9 +79,11 @@ fun PokemonDetailScreen(
   onBack: () -> Unit,
   onRefresh: () -> Unit,
   modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
   Scaffold(
     modifier = modifier.fillMaxSize(),
+    snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       TopAppBar(
         title = { Text(state.pokemonName) },
@@ -139,7 +157,7 @@ private fun PokemonDetailContent(
     StringField(label = stringResource(R.string.pokemon_id), value = pokemonDetail.id?.toString())
     StringField(label = stringResource(R.string.height_decimeters), value = pokemonDetail.height?.toString())
     StringField(label = stringResource(R.string.weight_hectograms), value = pokemonDetail.weight?.toString())
-    SpriteField(spriteUrl = pokemonDetail.sprites?.frontDefaultUrl)
+    SpriteField(spriteUrl = pokemonDetail.frontDefaultSprite)
   }
 }
 
@@ -203,9 +221,7 @@ private val previewPokemonDetail = PokemonDetail(
   name = "bulbasaur",
   height = 7,
   weight = 69,
-  sprites = PokemonSprites(
-    frontDefaultUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-  ),
+  frontDefaultSprite = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
 )
 
 @Preview(showBackground = true)

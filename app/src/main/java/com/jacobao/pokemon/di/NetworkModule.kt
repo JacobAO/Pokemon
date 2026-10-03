@@ -1,7 +1,7 @@
 package com.jacobao.pokemon.di
 
 import com.jacobao.pokemon.BuildConfig
-import com.jacobao.pokemon.data.remote.PokeService
+import com.jacobao.pokemon.data.PokeService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

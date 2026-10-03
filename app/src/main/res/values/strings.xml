@@ -6,6 +6,8 @@
     <string name="couldnt_load_pokemon">Couldn\'t load Pokemon.</string>
     <string name="couldnt_load_more_pokemon">Couldn\'t load more Pokemon.</string>
     <string name="couldnt_load_pokemon_details">Couldn\'t load Pokemon details.</string>
+    <string name="couldnt_refresh_pokemon">Couldn\'t refresh Pokemon.</string>
+    <string name="couldnt_refresh_pokemon_details">Couldn\'t refresh Pokemon details.</string>
     <string name="pokemon_id">ID</string>
     <string name="height_decimeters">Height (decimeters)</string>
     <string name="weight_hectograms">Weight (hectograms)</string>

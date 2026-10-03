@@ -12,10 +12,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,10 +35,11 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.jacobao.pokemon.R
-import com.jacobao.pokemon.data.model.PokemonSummary
+import com.jacobao.pokemon.ui.model.PokemonSummary
 import com.jacobao.pokemon.ui.common.LoadErrorMessage
 import com.jacobao.pokemon.ui.theme.PokemonTheme
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -46,9 +52,28 @@ fun PokemonListScreenWrapper(
   modifier: Modifier = Modifier,
 ) {
   val pokemon = viewModel.pokemon.collectAsLazyPagingItems()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val refreshFailedMessage = stringResource(R.string.couldnt_refresh_pokemon)
+
+  LaunchedEffect(pokemon, snackbarHostState) {
+    // Only react to a refresh that just failed, so an error state that is already present when
+    // this effect starts (e.g. after a configuration change) doesn't show the snackbar again.
+    var wasRefreshing = false
+    snapshotFlow { pokemon.loadState.refresh }.collect { refreshState ->
+      // With no items the full-screen error is shown instead.
+      if (wasRefreshing && refreshState is LoadState.Error && pokemon.itemCount > 0) {
+        // Replace any visible snackbar rather than queueing repeated failures.
+        snackbarHostState.currentSnackbarData?.dismiss()
+        launch { snackbarHostState.showSnackbar(refreshFailedMessage) }
+      }
+      wasRefreshing = refreshState is LoadState.Loading
+    }
+  }
+
   PokemonListScreen(
     pokemon = pokemon,
     onPokemonClick = onPokemonClick,
+    snackbarHostState = snackbarHostState,
     modifier = modifier,
   )
 }
@@ -59,9 +84,11 @@ fun PokemonListScreen(
   pokemon: LazyPagingItems<PokemonSummary>,
   onPokemonClick: (pokemonName: String) -> Unit,
   modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
   Scaffold(
     modifier = modifier.fillMaxSize(),
+    snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       TopAppBar(title = { Text(stringResource(R.string.all_the_pokemon)) })
     },

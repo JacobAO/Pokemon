@@ -6,18 +6,17 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.jacobao.pokemon.data.model.PokemonSummary
-import com.jacobao.pokemon.data.paging.PokemonPagingSource
-import com.jacobao.pokemon.data.repository.PokeRepo
+import com.jacobao.pokemon.data.PokeRepo
+import com.jacobao.pokemon.ui.model.PokemonSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
   pokeRepo: PokeRepo,
 ) : ViewModel() {
-
+  
   // Cached in the ViewModel scope so loaded pages survive recomposition and configuration changes.
   // This ViewModel belongs to the root nav entry, so the cache lasts for the app's lifetime.
   val pokemon: Flow<PagingData<PokemonSummary>> = Pager(
@@ -28,7 +27,7 @@ class PokemonListViewModel @Inject constructor(
     ),
     pagingSourceFactory = { PokemonPagingSource(pokeRepo) },
   ).flow.cachedIn(viewModelScope)
-
+  
   private companion object {
     const val PAGE_SIZE = 50
   }

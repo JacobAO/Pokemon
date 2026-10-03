@@ -3,9 +3,9 @@ package com.jacobao.pokemon.data.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** Image URLs for a [PokemonDetail]. */
+/** Image URLs for a [PokemonDetailDTO]. */
 @Serializable
-data class PokemonSprites(
+data class PokemonSpritesDTO(
   @SerialName("front_default")
   val frontDefaultUrl: String?,
 )

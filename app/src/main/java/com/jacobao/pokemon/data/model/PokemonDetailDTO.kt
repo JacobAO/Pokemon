@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 
 /** Details for a single Pokemon as returned by the PokeAPI `pokemon/{name}` endpoint. */
 @Serializable
-data class PokemonDetail(
+data class PokemonDetailDTO(
   val id: Int?,
   val name: String,
   val height: Int?,
   val weight: Int?,
-  val sprites: PokemonSprites?,
+  val sprites: PokemonSpritesDTO?,
 )
