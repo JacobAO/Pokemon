@@ -16,10 +16,10 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.jacobao.pokemon.navigation.ListDetailScene
 import com.jacobao.pokemon.navigation.rememberListDetailSceneStrategy
-import com.jacobao.pokemon.ui.detail.PokemonDetail
+import com.jacobao.pokemon.ui.detail.PokemonDetailRoute
 import com.jacobao.pokemon.ui.detail.PokemonDetailScreenWrapper
 import com.jacobao.pokemon.ui.detail.PokemonDetailViewModel
-import com.jacobao.pokemon.ui.list.PokemonList
+import com.jacobao.pokemon.ui.list.PokemonListRoute
 import com.jacobao.pokemon.ui.list.PokemonListScreenWrapper
 import com.jacobao.pokemon.ui.list.PokemonListViewModel
 import com.jacobao.pokemon.ui.theme.PokemonTheme
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       PokemonTheme {
-        val backStack = rememberNavBackStack(PokemonList)
+        val backStack = rememberNavBackStack(PokemonListRoute)
         val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
 
         NavDisplay(
@@ -45,18 +45,18 @@ class MainActivity : ComponentActivity() {
             rememberViewModelStoreNavEntryDecorator(),
           ),
           entryProvider = entryProvider {
-            entry<PokemonList>(metadata = ListDetailScene.listPane()) {
+            entry<PokemonListRoute>(metadata = ListDetailScene.listPane()) {
               PokemonListScreenWrapper(
                 viewModel = hiltViewModel<PokemonListViewModel>(),
-                onPokemonClick = { pokemonId -> backStack.showDetail(pokemonId) },
+                onPokemonClick = { pokemonName -> backStack.showDetail(pokemonName) },
               )
             }
-            entry<PokemonDetail>(metadata = ListDetailScene.detailPane()) { key ->
+            entry<PokemonDetailRoute>(metadata = ListDetailScene.detailPane()) { key ->
               // ViewModelStoreNavEntryDecorator scopes this to the entry, so each
               // PokemonDetail key gets its own ViewModel without needing a ViewModel key.
               PokemonDetailScreenWrapper(
                 viewModel = hiltViewModel<PokemonDetailViewModel, PokemonDetailViewModel.Factory>(
-                  creationCallback = { factory -> factory.create(key.pokemonId) },
+                  creationCallback = { factory -> factory.create(key.pokemonName) },
                 ),
                 onBack = { backStack.removeLastOrNull() },
               )
@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
 }
 
 /** Replaces any existing detail entry so the back stack holds at most one detail at a time. */
-private fun NavBackStack<NavKey>.showDetail(pokemonId: String) {
-  removeAll { it is PokemonDetail }
-  add(PokemonDetail(pokemonId))
+private fun NavBackStack<NavKey>.showDetail(pokemonName: String) {
+  removeAll { it is PokemonDetailRoute }
+  add(PokemonDetailRoute(pokemonName))
 }

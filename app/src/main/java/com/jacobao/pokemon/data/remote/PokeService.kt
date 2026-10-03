@@ -1,7 +1,9 @@
 package com.jacobao.pokemon.data.remote
 
+import com.jacobao.pokemon.data.model.PokemonDetail
 import com.jacobao.pokemon.data.model.PokemonPage
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -15,4 +17,7 @@ interface PokeService {
     @Query("offset") offset: Int,
     @Query("limit") limit: Int,
   ): PokemonPage
+
+  @GET("pokemon/{name}/")
+  suspend fun getPokemon(@Path("name") name: String): PokemonDetail
 }

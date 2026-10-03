@@ -1,7 +1,14 @@
 <resources>
     <string name="app_name">Pokemon</string>
+    <string name="all_the_pokemon">ALL the Pokemon</string>
     <string name="back">Back</string>
     <string name="retry">Retry</string>
     <string name="couldnt_load_pokemon">Couldn\'t load Pokemon.</string>
     <string name="couldnt_load_more_pokemon">Couldn\'t load more Pokemon.</string>
+    <string name="couldnt_load_pokemon_details">Couldn\'t load Pokemon details.</string>
+    <string name="pokemon_id">ID</string>
+    <string name="height_decimeters">Height (decimeters)</string>
+    <string name="weight_hectograms">Weight (hectograms)</string>
+    <string name="front_default_sprite">Front Default Sprite</string>
+    <string name="unknown">Unknown</string>
 </resources>

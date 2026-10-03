@@ -32,12 +32,8 @@ class PokemonPagingSource(
         offset + response.results.size
       }
       
-      // expect API to return items with unique name, but filter duplicates as a backup since
-      // the UI uses it as a lazy list key and therefore would crash on duplicates
-      val uniqueResults = response.results.distinctBy { it.name }
-      
       LoadResult.Page(
-        data = uniqueResults,
+        data = response.results,
         prevKey = null,
         nextKey = nextKey,
       )

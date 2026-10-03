@@ -61,6 +61,8 @@ dependencies {
   implementation(libs.okhttp.logging.interceptor)
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.timber)
+  implementation(libs.coil.compose)
+  implementation(libs.coil.network.okhttp)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
   implementation(libs.androidx.navigation3.runtime)

@@ -1,26 +1,25 @@
 package com.jacobao.pokemon.ui.list
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
@@ -32,17 +31,18 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.jacobao.pokemon.R
 import com.jacobao.pokemon.data.model.PokemonSummary
+import com.jacobao.pokemon.ui.common.LoadErrorMessage
 import com.jacobao.pokemon.ui.theme.PokemonTheme
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object PokemonList : NavKey
+data object PokemonListRoute : NavKey
 
 @Composable
 fun PokemonListScreenWrapper(
   viewModel: PokemonListViewModel,
-  onPokemonClick: (pokemonId: String) -> Unit,
+  onPokemonClick: (pokemonName: String) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   val pokemon = viewModel.pokemon.collectAsLazyPagingItems()
@@ -57,38 +57,49 @@ fun PokemonListScreenWrapper(
 @Composable
 fun PokemonListScreen(
   pokemon: LazyPagingItems<PokemonSummary>,
-  onPokemonClick: (pokemonId: String) -> Unit,
+  onPokemonClick: (pokemonName: String) -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+  Scaffold(
+    modifier = modifier.fillMaxSize(),
+    topBar = {
+      TopAppBar(title = { Text(stringResource(R.string.all_the_pokemon)) })
+    },
+  ) { innerPadding ->
     val refreshState = pokemon.loadState.refresh
-    PullToRefreshBox(
-      // The full-screen loading state already shows progress when there are no items, so only show
-      // the pull to refresh loading state when there are items
-      isRefreshing = refreshState is LoadState.Loading && pokemon.itemCount > 0,
-      onRefresh = pokemon::refresh,
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding),
-    ) {
-      when {
-        // Only take over the whole screen while there is nothing to show.
-        pokemon.itemCount == 0 && refreshState is LoadState.Loading -> {
-          FullScreenScrollable {
-            CircularProgressIndicator()
-          }
+    val contentModifier = Modifier
+      .fillMaxSize()
+      .padding(innerPadding)
+    
+    when {
+      // Only take over the whole screen while there is nothing to show.
+      pokemon.itemCount == 0 && refreshState is LoadState.Loading -> {
+        Box(
+          modifier = contentModifier,
+          contentAlignment = Alignment.Center,
+        ) {
+          CircularProgressIndicator()
         }
-
-        pokemon.itemCount == 0 && refreshState is LoadState.Error -> {
-          FullScreenScrollable {
-            LoadErrorMessage(
-              message = stringResource(R.string.couldnt_load_pokemon),
-              onRetry = pokemon::refresh,
-            )
-          }
+      }
+      
+      pokemon.itemCount == 0 && refreshState is LoadState.Error -> {
+        Box(
+          modifier = contentModifier,
+          contentAlignment = Alignment.Center,
+        ) {
+          LoadErrorMessage(
+            message = stringResource(R.string.couldnt_load_pokemon),
+            onRetry = pokemon::refresh,
+          )
         }
-
-        else -> {
+      }
+      
+      else -> {
+        PullToRefreshBox(
+          isRefreshing = refreshState is LoadState.Loading,
+          onRefresh = pokemon::refresh,
+          modifier = contentModifier,
+        ) {
           PokemonListContent(
             pokemon = pokemon,
             onPokemonClick = onPokemonClick,
@@ -100,33 +111,16 @@ fun PokemonListScreen(
   }
 }
 
-/**
- * Centers [content] in a scrollable container that fills the screen, so pull to refresh can be
- * triggered from non-list states.
- */
-@Composable
-private fun FullScreenScrollable(
-  modifier: Modifier = Modifier,
-  content: @Composable () -> Unit,
-) {
-  LazyColumn(modifier = modifier.fillMaxSize()) {
-    item {
-      Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-        content()
-      }
-    }
-  }
-}
-
 @Composable
 private fun PokemonListContent(
   pokemon: LazyPagingItems<PokemonSummary>,
-  onPokemonClick: (pokemonId: String) -> Unit,
+  onPokemonClick: (pokemonName: String) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   LazyColumn(modifier = modifier) {
     items(
       count = pokemon.itemCount,
+      // note name is assumed to be unique within the entire list or this will crash
       key = pokemon.itemKey { it.name },
     ) { index ->
       val item = pokemon[index] ?: return@items
@@ -136,7 +130,7 @@ private fun PokemonListContent(
       )
       HorizontalDivider()
     }
-
+    
     when (pokemon.loadState.append) {
       is LoadState.Loading -> item(key = "append_loading") {
         Box(
@@ -148,7 +142,7 @@ private fun PokemonListContent(
           CircularProgressIndicator()
         }
       }
-
+      
       is LoadState.Error -> item(key = "append_error") {
         LoadErrorMessage(
           message = stringResource(R.string.couldnt_load_more_pokemon),
@@ -158,7 +152,7 @@ private fun PokemonListContent(
             .padding(16.dp),
         )
       }
-
+      
       is LoadState.NotLoading -> Unit
     }
   }
@@ -173,33 +167,13 @@ private fun PokemonListItem(
   Column(
     modifier = modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick)
-      .padding(horizontal = 16.dp, vertical = 12.dp),
+      .clickable(
+        onClick = onClick,
+        role = Role.Button,
+      )
+      .padding(horizontal = 16.dp, vertical = 16.dp),
   ) {
-    Text(text = pokemon.name, style = MaterialTheme.typography.titleMedium)
-    Text(
-      text = pokemon.url,
-      style = MaterialTheme.typography.bodySmall,
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-  }
-}
-
-@Composable
-private fun LoadErrorMessage(
-  message: String,
-  onRetry: () -> Unit,
-  modifier: Modifier = Modifier,
-) {
-  Column(
-    modifier = modifier.padding(16.dp),
-    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-    horizontalAlignment = Alignment.CenterHorizontally,
-  ) {
-    Text(text = message, textAlign = TextAlign.Center)
-    Button(onClick = onRetry) {
-      Text(stringResource(R.string.retry))
-    }
+    Text(text = pokemon.name, style = MaterialTheme.typography.titleLarge)
   }
 }
 
