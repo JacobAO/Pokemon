@@ -21,7 +21,7 @@ import timber.log.Timber
 object NetworkModule {
 
   private const val TIMEOUT_SECONDS = 30L
-  private const val POKE_API_BASE_URL = "https://pokeapi.co/api/v2"
+  private const val POKE_API_BASE_URL = "https://pokeapi.co/api/v2/"
 
   @Provides
   @Singleton

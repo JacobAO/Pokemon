@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Pokemon</string>
     <string name="back">Back</string>
+    <string name="retry">Retry</string>
+    <string name="couldnt_load_pokemon">Couldn\'t load Pokemon.</string>
+    <string name="couldnt_load_more_pokemon">Couldn\'t load more Pokemon.</string>
 </resources>
