@@ -35,8 +35,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.jacobao.pokemon.R
-import com.jacobao.pokemon.ui.model.PokemonSummary
 import com.jacobao.pokemon.ui.common.LoadErrorMessage
+import com.jacobao.pokemon.ui.model.PokemonSummary
 import com.jacobao.pokemon.ui.theme.PokemonTheme
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -54,7 +54,7 @@ fun PokemonListScreenWrapper(
   val pokemon = viewModel.pokemon.collectAsLazyPagingItems()
   val snackbarHostState = remember { SnackbarHostState() }
   val refreshFailedMessage = stringResource(R.string.couldnt_refresh_pokemon)
-
+  
   LaunchedEffect(pokemon, snackbarHostState) {
     // Only react to a refresh that just failed, so an error state that is already present when
     // this effect starts (e.g. after a configuration change) doesn't show the snackbar again.
@@ -69,7 +69,7 @@ fun PokemonListScreenWrapper(
       wasRefreshing = refreshState is LoadState.Loading
     }
   }
-
+  
   PokemonListScreen(
     pokemon = pokemon,
     onPokemonClick = onPokemonClick,
@@ -204,8 +204,8 @@ private fun PokemonListItem(
   }
 }
 
-private val previewPokemon = listOf("bulbasaur", "ivysaur", "venusaur").mapIndexed { index, name ->
-  PokemonSummary(name = name, url = "https://pokeapi.co/api/v2/pokemon/${index + 1}/")
+private val previewPokemon = listOf("bulbasaur", "ivysaur", "venusaur").mapIndexed { _, name ->
+  PokemonSummary(name = name)
 }
 
 @Preview(showBackground = true)

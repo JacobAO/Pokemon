@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PokemonSummaryDTO(
   val name: String, // unique ID
-  val url: String,
+  val url: String, // unused as we load details from a known URL
 )

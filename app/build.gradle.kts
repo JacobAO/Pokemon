@@ -20,9 +20,6 @@ android {
     versionName = "1.0"
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-    buildConfigField("String", "POKE_API_BASE_URL", "\"https://pokeapi.co/api/\"")
-    buildConfigField("String", "POKE_API_VERSION", "\"v2\"")
   }
   
   buildTypes {

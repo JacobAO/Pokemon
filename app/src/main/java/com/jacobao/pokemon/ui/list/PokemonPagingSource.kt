@@ -12,7 +12,7 @@ import timber.log.Timber
  * list and only appends, so there is no previous key.
  *
  * Note that the API returns a full URL for the next page with the offset pre-calculated. However
- * we will calcuate the next URL ourselves so we always load from the known URL instead of loading
+ * we will calculate the next URL ourselves so we always load from the known URL instead of loading
  * a URL from a potentially untrusted API that I didn't create
  */
 class PokemonPagingSource(
